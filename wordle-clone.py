@@ -3,7 +3,7 @@ import pathlib
 import random
 from string import ascii_letters
 import requests
-import keys #.py file containing the API key (hidden)
+import keys #.py file containing API key
 
 from rich.console import Console
 from rich.theme import Theme
@@ -60,8 +60,19 @@ def show_guesses(guesses, word):
 
         console.print("".join(styled_guess), justify="center")
 
-def game_end(word):
-    print(f"The word was:{word}\n")
+
+def game_end(guesses, word, guessed_correctly):
+    refresh_page(headline="Game Over")
+    show_guesses(guesses, word)
+
+    if guessed_correctly:
+        console.print(f"\n[bold white on green]Correct, the word is {word}[/]")
+    else:
+        console.print(f"\n[bold white on red]Sorry, the word was {word}[/]")
+
+def guess_word(previous_guesses):
+    guess = console.input("\nGuess word: ").upper()
+    return guess
 
 
 
@@ -70,29 +81,28 @@ def main():
   #get length from user
   length = int(input("\nWhat length would you like your word to be? "))                               
 
-  #get a random word through function + API
+  #get random word through function + API
   word = get_random_word(length)
+  guesses = ["_" * length] * (length+1)
 
   #for checking purposes 
   #print(word)  # Output: some {length} letter string
 
 # Process (main loop)
-  for guess_num in range(1, length+2):
-    guess = input(f"\nGuess {guess_num}: ").upper()
 
-    while not check_if_word(guess):
-      guess = input(f"Invalid guess, not a word. Guess {guess_num}: ").upper() #uses an API to check if the guess is a word 
-        
 
-    if guess == word:
-        print("\nCorrect\n\n")
-        break
+  for idx in range(6):
+        refresh_page(headline=f"Guess {idx + 1}")
+        show_guesses(guesses, word)
 
-    show_guesses(guess,word)
+        guesses[idx] = guess_word(previous_guesses=guesses[:idx])
+        if guesses[idx] == word:
+            break
+
+        show_guesses(guesses,word)
 
 # Post-process
-  else:
-    game_end(word)
+  game_end(guesses, word, guessed_correctly=guesses[idx] == word)
 
 
 if __name__ == "__main__":
