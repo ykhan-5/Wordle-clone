@@ -3,7 +3,16 @@ import pathlib
 import random
 from string import ascii_letters
 import requests
-import keys #.py file containing API key
+import keys #.py file containing the API key (hidden)
+
+from rich.console import Console
+from rich.theme import Theme
+
+console = Console(width=40, theme=Theme({"warning": "red on yellow"}))
+
+def refresh_page(headline):
+    console.clear()
+    console.rule(f"[bold blue]:leafy_green: {headline} :leafy_green:[/]\n")
 
 word = ""
 length = 0
@@ -35,31 +44,37 @@ def check_if_word(guess): #some problem with this
     
 
 
-def show_guess(guess, word):
-    correct_letters = {
-        letter for letter, correct in zip(guess, word) if letter == correct
-    }
-    misplaced_letters = set(guess) & set(word) - correct_letters
-    wrong_letters = set(guess) - set(word)
+def show_guesses(guesses, word):
+    for guess in guesses:
+        styled_guess = []
+        for letter, correct in zip(guess, word):
+            if letter == correct:
+                style = "bold white on green"
+            elif letter in word:
+                style = "bold white on yellow"
+            elif letter in ascii_letters:
+                style = "white on #666666"
+            else:
+                style = "dim"
+            styled_guess.append(f"[{style}]{letter}[/]")
 
-    print("Correct letters:", ", ".join(sorted(correct_letters)))
-    print("Misplaced letters:", ", ".join(sorted(misplaced_letters)))
-    print("Wrong letters:", ", ".join(sorted(wrong_letters)))
+        console.print("".join(styled_guess), justify="center")
 
 def game_end(word):
     print(f"The word was:{word}\n")
 
 
+
 def main():
 # Pre-process
   #get length from user
-  length = int(input("\nWhat length would you like your word to be? "))
+  length = int(input("\nWhat length would you like your word to be? "))                               
 
-  #get random word through function + API
+  #get a random word through function + API
   word = get_random_word(length)
 
   #for checking purposes 
-  print(word)  # Output: some {length} letter string
+  #print(word)  # Output: some {length} letter string
 
 # Process (main loop)
   for guess_num in range(1, length+2):
@@ -73,7 +88,7 @@ def main():
         print("\nCorrect\n\n")
         break
 
-    show_guess(guess,word)
+    show_guesses(guess,word)
 
 # Post-process
   else:
